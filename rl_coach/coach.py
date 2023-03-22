@@ -15,7 +15,7 @@
 
 import sys
 sys.path.append('.')
-
+from shutil import copyfile
 import copy
 from configparser import ConfigParser, Error
 import os
@@ -37,8 +37,7 @@ import subprocess
 from glob import glob
 
 from rl_coach.graph_managers.graph_manager import HumanPlayScheduleParameters, GraphManager
-from rl_coach.utils import list_all_presets, short_dynamic_import, get_open_port, SharedMemoryScratchPad, \
-    get_base_dir, set_gpu
+from rl_coach.utils import list_all_presets, short_dynamic_import, get_open_port, SharedMemoryScratchPad, get_base_dir
 from rl_coach.graph_managers.basic_rl_graph_manager import BasicRLGraphManager
 from rl_coach.environments.environment import SingleLevelSelection
 from rl_coach.memories.backend.redis import RedisPubSubMemoryBackendParameters
@@ -50,38 +49,11 @@ from rl_coach.data_stores.redis_data_store import RedisDataStoreParameters
 from rl_coach.data_stores.data_store_impl import get_data_store, construct_data_store_params
 from rl_coach.training_worker import training_worker
 from rl_coach.rollout_worker import rollout_worker
-from rl_coach.schedules import *
-from rl_coach.exploration_policies.e_greedy import *
 
+from IPython import embed
 
 if len(set(failed_imports)) > 0:
     screen.warning("Warning: failed to import the following packages - {}".format(', '.join(set(failed_imports))))
-
-
-def _get_cuda_available_devices():
-    import ctypes
-
-    try:
-        devices = os.environ['CUDA_VISIBLE_DEVICES'].split(',')
-        return [] if devices[0] == '' else [int(i) for i in devices]
-    except KeyError:
-        pass
-
-    try:
-        cuda_lib = ctypes.CDLL('libcuda.so')
-    except OSError:
-        return []
-
-    CUDA_SUCCESS = 0
-
-    num_gpus = ctypes.c_int()
-    result = cuda_lib.cuInit(0)
-    if result != CUDA_SUCCESS:
-        return []
-    result = cuda_lib.cuDeviceGetCount(ctypes.byref(num_gpus))
-    if result != CUDA_SUCCESS:
-        return []
-    return list(range(num_gpus.value))
 
 
 def add_items_to_dict(target_dict, source_dict):
@@ -203,19 +175,19 @@ def handle_distributed_coach_orchestrator(args):
                                                 data_store_params=ds_params_instance)
     orchestrator = Kubernetes(orchestration_params)
     if not orchestrator.setup(args.checkpoint_restore_dir):
-        screen.print("Could not setup.")
+        print("Could not setup.")
         return 1
 
     if orchestrator.deploy_trainer():
-        screen.print("Successfully deployed trainer.")
+        print("Successfully deployed trainer.")
     else:
-        screen.print("Could not deploy trainer.")
+        print("Could not deploy trainer.")
         return 1
 
     if orchestrator.deploy_worker():
-        screen.print("Successfully deployed rollout worker(s).")
+        print("Successfully deployed rollout worker(s).")
     else:
-        screen.print("Could not deploy rollout worker(s).")
+        print("Could not deploy rollout worker(s).")
         return 1
 
     if args.dump_worker_logs:
@@ -244,8 +216,6 @@ class CoachLauncher(object):
     and handle absolutely everything for a job.
     """
 
-    gpus = _get_cuda_available_devices()
-
     def launch(self):
         """
         Main entry point for the class, and the standard way to run coach from the command line.
@@ -254,6 +224,22 @@ class CoachLauncher(object):
         parser = self.get_argument_parser()
         args = self.get_config_args(parser)
         graph_manager = self.get_graph_manager_from_args(args)
+        
+        #copy the preset file to the experiment directory
+        copyfile(args.preset.split(':')[0],  args.experiment_path + '/' +  args.preset.split(':')[0].split('/')[-1])
+        
+        #copy the environment file to the experiment directory
+        env_file_name =  graph_manager.env_params.path.split(':')[0].replace('.','/')+'.py'
+        j = 0
+        env_full_path = ''
+        while not env_file_name.split('/')[0] == args.preset.split(':')[0].split('/')[j]:
+            env_full_path = env_full_path +  args.preset.split(':')[0].split('/')[j] + '/'
+            j += 1
+            
+        copyfile(env_full_path + env_file_name ,  args.experiment_path + '/' +  env_file_name.split('/')[-1])
+
+
+
         self.run_graph_manager(graph_manager, args)
 
     def get_graph_manager_from_args(self, args: argparse.Namespace) -> 'GraphManager':
@@ -327,6 +313,7 @@ class CoachLauncher(object):
         """
         Replace a short preset name with the full python path, and verify that it can be imported.
         """
+        #embed()
         if preset.lower() in [p.lower() for p in list_all_presets()]:
             preset = "{}.py:graph_manager".format(os.path.join(get_base_dir(), 'presets', preset))
         else:
@@ -470,9 +457,6 @@ class CoachLauncher(object):
         if args.export_onnx_graph and not args.checkpoint_save_secs:
             screen.warning("Exporting ONNX graphs requires setting the --checkpoint_save_secs flag. "
                            "The --export_onnx_graph will have no effect.")
-
-        if args.use_cpu or not CoachLauncher.gpus:
-            CoachLauncher.gpus = [None]
 
         return args
 
@@ -636,6 +620,7 @@ class CoachLauncher(object):
 
     def run_graph_manager(self, graph_manager: 'GraphManager', args: argparse.Namespace):
         task_parameters = self.create_task_parameters(graph_manager, args)
+#        embed()
 
         if args.distributed_coach and args.distributed_coach_run_type != RunType.ORCHESTRATOR:
             handle_distributed_coach_tasks(graph_manager, args, task_parameters)
@@ -643,9 +628,9 @@ class CoachLauncher(object):
 
         # Single-threaded runs
         if args.num_workers == 1:
-            self.start_single_process(task_parameters, graph_manager, args)
+            self.start_single_threaded(task_parameters, graph_manager, args)
         else:
-            self.start_multi_process(graph_manager, args)
+            self.start_multi_threaded(graph_manager, args)
 
     @staticmethod
     def create_task_parameters(graph_manager: 'GraphManager', args: argparse.Namespace):
@@ -703,12 +688,12 @@ class CoachLauncher(object):
         return task_parameters
 
     @staticmethod
-    def start_single_process(task_parameters, graph_manager: 'GraphManager', args: argparse.Namespace):
+    def start_single_threaded(task_parameters, graph_manager: 'GraphManager', args: argparse.Namespace):
         # Start the training or evaluation
         start_graph(graph_manager=graph_manager, task_parameters=task_parameters)
 
     @staticmethod
-    def start_multi_process(graph_manager: 'GraphManager', args: argparse.Namespace):
+    def start_multi_threaded(graph_manager: 'GraphManager', args: argparse.Namespace):
         total_tasks = args.num_workers
         if args.evaluation_worker:
             total_tasks += 1
@@ -729,8 +714,7 @@ class CoachLauncher(object):
                              "and not from a file. ")
 
         def start_distributed_task(job_type, task_index, evaluation_worker=False,
-                                   shared_memory_scratchpad=shared_memory_scratchpad,
-                                   gpu_id=None):
+                                   shared_memory_scratchpad=shared_memory_scratchpad):
             task_parameters = DistributedTaskParameters(
                 framework_type=args.framework,
                 parameters_server_hosts=ps_hosts,
@@ -750,8 +734,6 @@ class CoachLauncher(object):
                 export_onnx_graph=args.export_onnx_graph,
                 apply_stop_condition=args.apply_stop_condition
             )
-            if gpu_id is not None:
-                set_gpu(gpu_id)
             # we assume that only the evaluation workers are rendering
             graph_manager.visualization_parameters.render = args.render and evaluation_worker
             p = Process(target=start_graph, args=(graph_manager, task_parameters))
@@ -760,30 +742,25 @@ class CoachLauncher(object):
             return p
 
         # parameter server
-        parameter_server = start_distributed_task("ps", 0, gpu_id=CoachLauncher.gpus[0])
+        parameter_server = start_distributed_task("ps", 0)
 
         # training workers
         # wait a bit before spawning the non chief workers in order to make sure the session is already created
-        curr_gpu_idx = 0
         workers = []
-        workers.append(start_distributed_task("worker", 0, gpu_id=CoachLauncher.gpus[curr_gpu_idx]))
+        workers.append(start_distributed_task("worker", 0))
 
         time.sleep(2)
         for task_index in range(1, args.num_workers):
-            curr_gpu_idx = (curr_gpu_idx + 1) % len(CoachLauncher.gpus)
-            workers.append(start_distributed_task("worker", task_index, gpu_id=CoachLauncher.gpus[curr_gpu_idx]))
+            workers.append(start_distributed_task("worker", task_index))
 
         # evaluation worker
         if args.evaluation_worker or args.render:
-            curr_gpu_idx = (curr_gpu_idx + 1) % len(CoachLauncher.gpus)
-            evaluation_worker = start_distributed_task("worker", args.num_workers, evaluation_worker=True,
-                                                       gpu_id=CoachLauncher.gpus[curr_gpu_idx])
+            evaluation_worker = start_distributed_task("worker", args.num_workers, evaluation_worker=True)
 
         # wait for all workers
         [w.join() for w in workers]
         if args.evaluation_worker:
             evaluation_worker.terminate()
-        parameter_server.terminate()
 
 
 class CoachInterface(CoachLauncher):
@@ -809,6 +786,7 @@ class CoachInterface(CoachLauncher):
         if self.args.num_workers == 1:
             task_parameters = self.create_task_parameters(self.graph_manager, self.args)
             self.graph_manager.create_graph(task_parameters)
+            
 
     def run(self):
         self.run_graph_manager(self.graph_manager, self.args)
