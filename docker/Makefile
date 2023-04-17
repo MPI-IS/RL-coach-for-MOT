@@ -2,6 +2,8 @@ REGISTRY=gcr.io
 REGISTRY=docker.io
 ORGANIZATION=nervana
 
+IMAGE=rlmot
+
 CONTEXT = $(realpath ..)
 
 BUILD_ARGUMENTS=
@@ -73,7 +75,7 @@ ifndef DOCKER
 endif
 
 build_base:
-	${DOCKER} build -f=Dockerfile.base -t=${IMAGE}-base:master ${BUILD_ARGUMENTS} ${CONTEXT}
+	${DOCKER} build -f=Dockerfile.base -t=${IMAGE}-base ${BUILD_ARGUMENTS} ${CONTEXT}
 
 build: build_base
 	${DOCKER} build -f=Dockerfile -t=${IMAGE} ${BUILD_ARGUMENTS} ${CONTEXT}
