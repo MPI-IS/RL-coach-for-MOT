@@ -35,6 +35,7 @@ class ContMOTEnvironmentParameters(EnvironmentParameters):
         self.var_det = 1
         self.NEv = 1
         self.custom_param = 1
+        self.Reward_rescale = 1
 
     @property
     def path(self):
@@ -154,18 +155,18 @@ class ContMOTEnvironment(Environment):
 
     
     def loading(self,det):
-	"""
-	simulate the loading of the MOT
-	"""
-	
-       
+        """
+        simulate the loading of the MOT
+        """
+        
+        
         return max((0,self.L_intrp(det)*random.gauss(1,0.2))) #
 
     
     def temperature(self,det):
-	"""
-	simulate the temperature of the MOT
-	"""
+        """
+        simulate the temperature of the MOT
+        """
 
         logT_intrp = self.logT_intrp
         if det>=max(self.det_T):
@@ -177,9 +178,9 @@ class ContMOTEnvironment(Environment):
 
 
     def draw_MOT_img(self):
-	"""
-	generate the fluorescence image using the CNN model
-	"""
+        """
+        generate the fluorescence image using the CNN model
+        """
         
         det2exp = self.det + self.det_off
         self.img = self.MOT_img_gen.predict(np.expand_dims((self.Natoms/self.Ttot, -det2exp/50),axis=0))*255
@@ -191,8 +192,7 @@ class ContMOTEnvironment(Environment):
     
 
     def _render(self):
-			
-		
+        pass
 		
      
     def get_rendered_image(self) -> np.ndarray:
@@ -208,8 +208,8 @@ class ContMOTEnvironment(Environment):
 
     def _take_action(self, action):
         """
-	setting the new control parameter and letting the MOT evolve
-	"""
+        setting the new control parameter and letting the MOT evolve
+        """
         
             
         if not self.done:
@@ -226,9 +226,9 @@ class ContMOTEnvironment(Environment):
 	    
             if det2exp<-2.5:
             
-                self.Natoms += self.loading(det = det2exp, det_opt = self.det_opt)
+                self.Natoms += self.loading(det = det2exp)
                
-                self.Temp = self.temperature(self.Natoms,det2exp)
+                self.Temp = self.temperature(det2exp)
 	    
 	    #remove atoms when the detuning is too close to resonance
             else:
@@ -259,15 +259,9 @@ class ContMOTEnvironment(Environment):
         if self.t>=self.Ttot :
             self.done = True
             self.reward = self.Natoms/self.Temp/self.Ttot 
-            self.reward = (self.gauss(self.Natoms,self.N0,1)/self.Temp/self.Ttot
+            self.reward = (self.gauss(self.Natoms,self.N0,1)/self.Temp/self.Ttot)
             if self.Natoms<0.1:
                 self.reward = 0
-        
-      
-
-
-    
-    
 
     def dump_video_of_last_episode(self):
         exp_path = logger.experiment_path

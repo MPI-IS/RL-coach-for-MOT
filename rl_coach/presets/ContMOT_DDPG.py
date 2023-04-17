@@ -2,6 +2,7 @@ from rl_coach.agents.ddpg_agent import DDPGAgentParameters
 from rl_coach.base_parameters import VisualizationParameters, PresetValidationParameters, MiddlewareScheme, EmbedderScheme
 from rl_coach.environments.environment import SingleLevelSelection
 from rl_coach.architectures.layers import Dense
+#from rl_coach.environments.gym_environment import Atari, atari_deterministic_v4, atari_schedule
 from rl_coach.architectures.embedder_parameters import InputEmbedderParameters
 from rl_coach.graph_managers.basic_rl_graph_manager import BasicRLGraphManager
 from rl_coach.environments.ContMOT_environment import ContMOTEnvironmentParameters
@@ -11,6 +12,7 @@ from rl_coach.schedules import LinearSchedule, ConstantSchedule
 from rl_coach.memories.non_episodic.prioritized_experience_replay import PrioritizedExperienceReplayParameters
 
 	
+from IPython import embed 
 ####################
 # Graph Scheduling #
 ####################
@@ -19,8 +21,8 @@ schedule_params = SimpleSchedule()
 
 number_evals = 10
 schedule_params.evaluation_steps = EnvironmentEpisodes(number_evals)
-schedule_params.heatup_steps = EnvironmentSteps(25000) 
-schedule_params.improve_steps = TrainingSteps(1500000) 
+schedule_params.heatup_steps = EnvironmentSteps(25000) #25000
+schedule_params.improve_steps = TrainingSteps(1500000) #1500000
 schedule_params.steps_between_evaluation_periods = EnvironmentEpisodes(200)
 
 
@@ -41,7 +43,15 @@ agent_params.network_wrappers['critic'].input_embedders_parameters =  {'observat
 agent_params.network_wrappers['actor'].learning_rate = 0.0001
 agent_params.network_wrappers['critic'].learning_rate = 0.001
 
+#agent_params.algorithm.heatup_using_network_decisions = True
 
+#agent_params.network_wrappers['actor'].input_embedders_parameters['forward_camera'] = \
+#    agent_params.network_wrappers['actor'].input_embedders_parameters.pop('observation')
+#agent_params.network_wrappers['critic'].input_embedders_parameters['forward_camera'] = \
+#    agent_params.network_wrappers['critic'].input_embedders_parameters.pop('observation')
+
+
+#agent_params.algorithm.num_steps_between_copying_online_weights_to_target = EnvironmentSteps(1000)
 agent_params.algorithm.num_consecutive_playing_steps = EnvironmentSteps(25)
 
 agent_params.exploration.sigma = 0.2
