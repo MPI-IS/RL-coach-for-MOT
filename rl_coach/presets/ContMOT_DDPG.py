@@ -54,7 +54,7 @@ agent_params.network_wrappers['critic'].learning_rate = 0.001
 #agent_params.algorithm.num_steps_between_copying_online_weights_to_target = EnvironmentSteps(1000)
 agent_params.algorithm.num_consecutive_playing_steps = EnvironmentSteps(25)
 
-agent_params.exploration.sigma = 0.2
+agent_params.exploration.sigma = 0.5
 
 
 from rl_coach.filters.filter import InputFilter
