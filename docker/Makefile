@@ -82,8 +82,12 @@ build: build_base
 	mkdir -p /tmp/checkpoint
 	rm -rf /tmp/checkpoint/*
 
+shell_base: 
+	${DOCKER} run ${RUN_ARGUMENTS} -it ${IMAGE}-base /bin/bash
+
 shell: build
 	${DOCKER} run ${RUN_ARGUMENTS} -it ${IMAGE} /bin/bash
+
 
 unit_tests: build
 	${DOCKER} run ${RUN_ARGUMENTS} -it ${IMAGE} ${UNIT_TESTS}
