@@ -141,10 +141,7 @@ class ContMOTEnvironment(Environment):
         self.T0 = random.uniform(0.1,1.1) #goal for the temperature at the end
         
         self.det = -20 # has no real effect, as it is overwritten by the first action
-        #self.det_off = self.var_det*random.uniform(-5, 10)
-        self.det_off = np.floor(((self.episode_idx+1) % 16)/2)*2 - 4
-        
-    
+        self.det_off = self.var_det*random.uniform(-5, 10)
 
 		
         self.det_hist.clear()
@@ -259,7 +256,7 @@ class ContMOTEnvironment(Environment):
         if self.t>=self.Ttot :
             self.done = True
             self.reward = self.Natoms/self.Temp/self.Ttot 
-            self.reward = (self.gauss(self.Natoms,self.N0,1)/self.Temp/self.Ttot)
+            #self.reward = (self.gauss(self.Natoms,self.N0,1)/self.Temp/self.Ttot)
             if self.Natoms<0.1:
                 self.reward = 0
 
