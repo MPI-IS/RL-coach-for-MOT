@@ -10,4 +10,4 @@ In this directory is a Dockerfile that can be used to build a containers that ha
 * in order to save output of the training outside of the container use "-e /checkpoint/Results" as argument to coach
 
 ## other dockerfiles
-* please refer to the original readme (README_coach.md) for more information on other Dockerfiles and images
+* please refer to the [original readme](README_coach.md) for more information on other Dockerfiles and images
