@@ -15,7 +15,7 @@ RUN apt-get update && \
     # Scipy requirements
     libblas-dev liblapack-dev libatlas-base-dev gfortran \
     dpkg-dev build-essential libjpeg-dev  libtiff-dev libnotify-dev \
-    ffmpeg swig cmake \
+    ffmpeg swig  \
     curl software-properties-common \
     build-essential \
     nasm tar libbz2-dev libgtk2.0-dev cmake git \
@@ -27,7 +27,6 @@ RUN apt-get update && \
 # Install Python 3.7           #
 ################################
 
-RUN DEBIAN_FRONTEND=noninteractive apt install -y software-properties-common
 RUN DEBIAN_FRONTEND=noninteractive add-apt-repository --yes ppa:deadsnakes/ppa && apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes python3.7 python3.7-dev python3.7-venv
 
