@@ -3,15 +3,19 @@
 This is a fork of the [Coach framework by Intel](https://github.com/IntelLabs/coach), used to control a simulated magneto-optical trap(MOT) through reinforcement learning. Original README.md can be found [here](README_coach.md).
 
 
-??? [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/IntelLabs/coach/blob/master/LICENSE)
-
-
 ## Table of Contents
 
 - [Installation](#installation)
+  * [Docker image](#docker-image)
+  * [Manual installation](#manual-installation)
+
 - [Getting Started](#getting-started)
-  * [Basic Usage](#basic-usage)
-    * [Running Coach](#running-coach)
+  * [Typical Usage](#typical-usage)
+    * [Running Coach](#running-coach) 
+    * [Useful options](#useful-options) 
+    * [Continue training from a checkpoint](#continue-training-from-a-checkpoint) 
+    * [Evaluate only](#evaluate-only) 
+  * [Supported Algorithms](#supported-algorithms)
 
 
 ## Installation
@@ -32,8 +36,9 @@ Instruction for building of a docker container are [here](docker/README.md).
 ### Manual installation 
 
 
+Alternatively, coach can be installed step-by-step:
 
-In order to install coach, there are a few prerequisites required. This will setup all the basics needed to get the user going with running Coach:
+There are a few prerequisites required. This will setup all the basics needed to get the user going with running Coach:
 
 ```
 # General
