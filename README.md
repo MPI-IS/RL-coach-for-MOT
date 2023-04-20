@@ -24,16 +24,10 @@ The corresponding docker images are based on Ubuntu 22.04 with Python 3.7.14.
 
 We highly recommend starting with the docker image. 
 
-Instructions for the installation of the Docker Engine can be found [here](https://docs.docker.com/engine/install/ubuntu/).
+Instructions for the installation of the Docker Engine can be found [here for Ubuntu](https://docs.docker.com/engine/install/ubuntu/)  and [here for Windows](https://docs.docker.com/desktop/install/windows-install/).
 
 Instruction for building of a docker container are [here](docker/README.md).
 
-We have implemented a virtualenv for coach in the docker image:
-
-```
-. /root/venv/bin/activate
-
-```
 
 ### Direct installation (?)
 
