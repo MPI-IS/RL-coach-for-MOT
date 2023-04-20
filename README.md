@@ -29,57 +29,59 @@ Instructions for the installation of the Docker Engine can be found [here for Ub
 Instruction for building of a docker container are [here](docker/README.md).
 
 
-### Direct installation (?)
+### Manual installation 
 
 
 
-In order to install coach, there are a few prerequisites required. This will setup all the basics needed to get the user going with running Coach on top of [OpenAI Gym](https://github.com/openai/gym) environments:
+In order to install coach, there are a few prerequisites required. This will setup all the basics needed to get the user going with running Coach:
 
 ```
 # General
-sudo -E apt-get install python3-pip cmake zlib1g-dev python3-tk python-opencv -y
+sudo  apt-get update
+sudo  apt-get install python3-pip cmake zlib1g-dev python3-tk -y
 
 # Boost libraries
-sudo -E apt-get install libboost-all-dev -y
+sudo  apt-get install libboost-all-dev -y
 
 # Scipy requirements
-sudo -E apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran -y
+sudo  apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran -y
 
-# PyGame
-sudo -E apt-get install libsdl-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
-libsmpeg-dev libportmidi-dev libavformat-dev libswscale-dev -y
+# Other
+sudo apt-get install dpkg-dev build-essential libjpeg-dev  libtiff-dev libnotify-dev -y
+sudo apt-get install ffmpeg swig curl software-properties-common  build-essential  nasm tar libbz2-dev libgtk2.0-dev  git unzip wget -y
 
-# Dashboard
-sudo -E apt-get install dpkg-dev build-essential python3.5-dev libjpeg-dev  libtiff-dev libsdl1.2-dev libnotify-dev 
-freeglut3 freeglut3-dev libsm-dev libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libgtk-3-dev libwebkitgtk-3.0-dev
-libgstreamer-plugins-base1.0-dev -y
+# Python 3.7.14
 
-# Gym
-sudo -E apt-get install libav-tools libsdl2-dev swig cmake -y
+sudo add-apt-repository --yes ppa:deadsnakes/ppa
+apt-get update
+apt-get install -y python3.7 python3.7-dev python3.7-venv
+
+# pip
+
+sudo curl -o /usr/local/bin/patchelf https://s3-us-west-2.amazonaws.com/openai-sci-artifacts/manual-builds/patchelf_0.9_amd64.elf
+sudo chmod +x /usr/local/bin/patchelf
+
 ```
 
 We recommend installing coach in a virtualenv:
 
 ```
-sudo -E pip3 install virtualenv
-virtualenv -p python3 coach_env
-. coach_env/bin/activate
+python3.7 -m venv --copies venv
+. venv/bin/activate
+
 ```
 
-Finally, install coach using pip:
+Clone the repository:
 ```
-pip3 install rl_coach
-```
-
-Or alternatively, for a development environment, install coach from the cloned repository:
-```
-cd coach
-pip3 install -e .
+git clone https://github.com/MPI-IS/RL-coach-for-MOT.git
 ```
 
-If a GPU is present, Coach's pip package will install tensorflow-gpu, by default. If a GPU is not present, an [Intel-Optimized TensorFlow](https://software.intel.com/en-us/articles/intel-optimized-tensorflow-wheel-now-available), will be installed. 
+Install  from the cloned repository:
+```
+cd RL-coach-for-MOT
+pip install .
+```
 
-In addition to OpenAI Gym, several other environments were tested and are supported. Please follow the instructions in the Supported Environments section below in order to install more environments.
 
 ## Getting Started
 
