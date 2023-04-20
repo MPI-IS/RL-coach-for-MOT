@@ -57,9 +57,9 @@ sudo apt-get install ffmpeg swig curl software-properties-common  build-essentia
 
 # Python 3.7.14
 
-sudo add-apt-repository --yes ppa:deadsnakes/ppa
-apt-get update
-apt-get install -y python3.7 python3.7-dev python3.7-venv
+sudo add-apt-repository -y ppa:deadsnakes/ppa
+sudo apt-get update
+sudo apt-get install -y python3.7 python3.7-dev python3.7-venv
 
 # pip
 
