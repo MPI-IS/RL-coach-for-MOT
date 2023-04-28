@@ -32,6 +32,7 @@ from rl_coach.exploration_policies.ou_process import OUProcessParameters
 from rl_coach.memories.episodic.episodic_experience_replay import EpisodicExperienceReplayParameters
 from rl_coach.spaces import BoxActionSpace, GoalsSpace
 
+from IPython import embed
 
 class DDPGCriticNetworkParameters(NetworkParameters):
     def __init__(self, use_batchnorm=False):
@@ -130,16 +131,13 @@ class DDPGAgent(ActorCriticAgent):
         self.TD_targets_signal = self.register_signal("TD targets")
         self.action_signal = self.register_signal("actions")
 
-    @property
-    def is_on_policy(self) -> bool:
-        return False
-
     def learn_from_batch(self, batch):
         actor = self.networks['actor']
         critic = self.networks['critic']
 
         actor_keys = self.ap.network_wrappers['actor'].input_embedders_parameters.keys()
         critic_keys = self.ap.network_wrappers['critic'].input_embedders_parameters.keys()
+        #embed()
 
         # TD error = r + discount*max(q_st_plus_1) - q_st
         next_actions, actions_mean = actor.parallel_prediction([
@@ -206,6 +204,9 @@ class DDPGAgent(ActorCriticAgent):
             actor_network = self.networks['actor'].target_network
         else:
             actor_network = self.networks['actor'].online_network
+            
+            
+        #embed()
 
         action_values = actor_network.predict(tf_input_state).squeeze()
 
@@ -216,6 +217,7 @@ class DDPGAgent(ActorCriticAgent):
         # get q value
         tf_input_state = self.prepare_batch_for_inference(curr_state, 'critic')
         action_batch = np.expand_dims(action, 0)
+        #embed()
         if type(action) != np.ndarray:
             action_batch = np.array([[action]])
         tf_input_state['action'] = action_batch

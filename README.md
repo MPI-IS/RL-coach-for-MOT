@@ -1,283 +1,168 @@
-> :warning: **DISCONTINUATION OF PROJECT** - 
-> *This project will no longer be maintained by Intel.
-> Intel has ceased development and contributions including, but not limited to, maintenance, bug fixes, new releases, or updates, to this project.*
-> **Intel no longer accepts patches to this project.**
-> *If you have an ongoing need to use this project, are interested in independently developing it, or would like to maintain patches for the open source software community, please create your own fork of this project.*
+# RL control of a MOT based on Coach
 
-# Coach
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/IntelLabs/coach/blob/master/LICENSE)
-[![Docs](https://readthedocs.org/projects/carla/badge/?version=latest)](https://intellabs.github.io/coach/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1134898.svg)](https://doi.org/10.5281/zenodo.1134898)
-[![Downloads](https://static.pepy.tech/personalized-badge/rl-coach?period=total&units=international_system&left_color=grey&right_color=blue&left_text=rl-coach%20downloads)](https://pepy.tech/project/rl-coach)
-[![Downloads](https://static.pepy.tech/personalized-badge/rl-coach-slim?period=total&units=international_system&left_color=grey&right_color=blue&left_text=rl-coach-slim%20downloads)](https://pepy.tech/project/rl-coach-slim)
-
-<p align="center"><img src="img/coach_logo.png" alt="Coach Logo" width="200"/></p>
-
-Coach is a python reinforcement learning framework containing implementation of many state-of-the-art algorithms.
-
-It exposes a set of easy-to-use APIs for experimenting with new RL algorithms, and allows simple integration of new environments to solve. 
-Basic RL components (algorithms, environments, neural network architectures, exploration policies, ...) are well decoupled, so that extending and reusing existing components is fairly painless.
-
-Training an agent to solve an environment is as easy as running:
-
-```bash
-coach -p CartPole_DQN -r
-```
-
-<img src="img/fetch_slide.gif" alt="Fetch Slide"/> <img src="img/pendulum.gif" alt="Pendulum"/> <img src="img/starcraft.gif" width = "281" height ="200" alt="Starcraft"/>
-<br>
-<img src="img/doom_deathmatch.gif" alt="Doom Deathmatch"/> <img src="img/carla.gif" alt="CARLA"/> <img src="img/montezuma.gif" alt="MontezumaRevenge" width = "164" height ="200"/>
-<br>
-<img src="img/doom_health.gif" alt="Doom Health Gathering"/> <img src="img/minitaur.gif" alt="PyBullet Minitaur" width = "249" height ="200"/> <img src="img/ant.gif" alt="Gym Extensions Ant"/>
-<br><br>
-
-* [Release 0.8.0](https://ai.intel.com/reinforcement-learning-coach-intel/) (initial release)
-* [Release 0.9.0](https://ai.intel.com/reinforcement-learning-coach-carla-qr-dqn/)
-* [Release 0.10.0](https://ai.intel.com/introducing-reinforcement-learning-coach-0-10-0/)
-* [Release 0.11.0](https://ai.intel.com/rl-coach-data-science-at-scale)
-* [Release 0.12.0](https://github.com/IntelLabs/coach/releases/tag/v0.12.0) 
-* [Release 1.0.0](https://www.intel.ai/rl-coach-new-release) (current release)
+This is a fork of the [Coach framework by Intel](https://github.com/IntelLabs/coach), used to control a simulated magneto-optical trap(MOT) through reinforcement learning. Original README.md can be found [here](README_coach.md).
 
 
 ## Table of Contents
 
-- [Benchmarks](#benchmarks)
 - [Installation](#installation)
+  * [Docker image](#docker-image)
+  * [Manual installation](#manual-installation)
+
 - [Getting Started](#getting-started)
-  * [Tutorials and Documentation](#tutorials-and-documentation)
-  * [Basic Usage](#basic-usage)
-    * [Running Coach](#running-coach)
-    * [Running Coach Dashboard (Visualization)](#running-coach-dashboard-visualization)
-  * [Distributed Multi-Node Coach](#distributed-multi-node-coach)
-  * [Batch Reinforcement Learning](#batch-reinforcement-learning)
-- [Supported Environments](#supported-environments)
-  * [Note on MuJoCo version](#note-on-mujoco-version)
-- [Supported Algorithms](#supported-algorithms)
-- [Citation](#citation)
-- [Contact](#contact)
-- [Disclaimer](#disclaimer)
+  * [Typical Usage](#typical-usage)
+    * [Running Coach](#running-coach) 
+    * [Useful options](#useful-options) 
+    * [Continue training from a checkpoint](#continue-training-from-a-checkpoint) 
+    * [Evaluate only](#evaluate-only) 
+  * [Supported Algorithms](#supported-algorithms)
 
-## Benchmarks
-
-One of the main challenges when building a research project, or a solution based on a published algorithm, is getting a concrete and reliable baseline that reproduces the algorithm's results, as reported by its authors. To address this problem, we are releasing a set of [benchmarks](benchmarks) that shows Coach reliably reproduces many state of the art algorithm results.
 
 ## Installation
 
-Note: Coach has only been tested on Ubuntu 16.04 LTS, and with Python 3.5.
+Note: Some parts of the original installation that are not needed for MOT control (e.g. PyGame and Gym) have been excluded here.
 
-For some information on installing on Ubuntu 17.10 with Python 3.6.3, please refer to the following issue: https://github.com/IntelLabs/coach/issues/54
+### Docker image
 
-In order to install coach, there are a few prerequisites required. This will setup all the basics needed to get the user going with running Coach on top of [OpenAI Gym](https://github.com/openai/gym) environments:
+The corresponding docker images are based on Ubuntu 22.04 with Python 3.7.14. 
+
+We highly recommend starting with the docker image. 
+
+Instructions for the installation of the Docker Engine can be found [here for Ubuntu](https://docs.docker.com/engine/install/ubuntu/)  and [here for Windows](https://docs.docker.com/desktop/install/windows-install/).
+
+Instruction for building of a docker container are [here](docker/README.md).
+
+
+### Manual installation 
+
+
+Alternatively, coach can be installed step-by-step:
+
+There are a few prerequisites required. This will setup all the basics needed to get the user going with running Coach:
 
 ```
 # General
-sudo -E apt-get install python3-pip cmake zlib1g-dev python3-tk python-opencv -y
+sudo  apt-get update
+sudo  apt-get install python3-pip cmake zlib1g-dev python3-tk -y
 
 # Boost libraries
-sudo -E apt-get install libboost-all-dev -y
+sudo  apt-get install libboost-all-dev -y
 
 # Scipy requirements
-sudo -E apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran -y
+sudo  apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran -y
 
-# PyGame
-sudo -E apt-get install libsdl-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
-libsmpeg-dev libportmidi-dev libavformat-dev libswscale-dev -y
+# Other
+sudo apt-get install dpkg-dev build-essential libjpeg-dev  libtiff-dev libnotify-dev -y
+sudo apt-get install ffmpeg swig curl software-properties-common  build-essential  nasm tar libbz2-dev libgtk2.0-dev  git unzip wget -y
 
-# Dashboard
-sudo -E apt-get install dpkg-dev build-essential python3.5-dev libjpeg-dev  libtiff-dev libsdl1.2-dev libnotify-dev 
-freeglut3 freeglut3-dev libsm-dev libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libgtk-3-dev libwebkitgtk-3.0-dev
-libgstreamer-plugins-base1.0-dev -y
+# Python 3.7.14
 
-# Gym
-sudo -E apt-get install libav-tools libsdl2-dev swig cmake -y
+sudo add-apt-repository -y ppa:deadsnakes/ppa
+sudo apt-get update
+sudo apt-get install -y python3.7 python3.7-dev python3.7-venv
+
+# pip
+
+sudo curl -o /usr/local/bin/patchelf https://s3-us-west-2.amazonaws.com/openai-sci-artifacts/manual-builds/patchelf_0.9_amd64.elf
+sudo chmod +x /usr/local/bin/patchelf
+
 ```
 
 We recommend installing coach in a virtualenv:
 
 ```
-sudo -E pip3 install virtualenv
-virtualenv -p python3 coach_env
-. coach_env/bin/activate
+python3.7 -m venv --copies venv
+. venv/bin/activate
+
 ```
 
-Finally, install coach using pip:
+Clone the repository:
 ```
-pip3 install rl_coach
-```
-
-Or alternatively, for a development environment, install coach from the cloned repository:
-```
-cd coach
-pip3 install -e .
+git clone https://github.com/MPI-IS/RL-coach-for-MOT.git
 ```
 
-If a GPU is present, Coach's pip package will install tensorflow-gpu, by default. If a GPU is not present, an [Intel-Optimized TensorFlow](https://software.intel.com/en-us/articles/intel-optimized-tensorflow-wheel-now-available), will be installed. 
+Install  from the cloned repository:
+```
+cd RL-coach-for-MOT
+pip install .
+```
 
-In addition to OpenAI Gym, several other environments were tested and are supported. Please follow the instructions in the Supported Environments section below in order to install more environments.
 
 ## Getting Started
 
-### Tutorials and Documentation
+### Tutorials and Documentation of the original Coach: 
+
 [Jupyter notebooks demonstrating how to run Coach from command line or as a library, implement an algorithm, or integrate an environment](https://github.com/IntelLabs/coach/tree/master/tutorials).
 
 [Framework documentation, algorithm description and instructions on how to contribute a new agent/environment](https://intellabs.github.io/coach/).
 
-### Basic Usage
+### Typical Usage
 
 #### Running Coach
 
-To allow reproducing results in Coach, we defined a mechanism called _preset_. 
-There are several available presets under the `presets` directory.
+To allow reproducing results in Coach, we use a mechanism called _preset_. 
+Several presets can be defined in the `presets` directory.
 To list all the available presets use the `-l` flag.
 
 To run a preset, use:
 
 ```bash
-coach -r -p <preset_name>
+coach -p <preset_name>
 ```
 
 For example:
-* CartPole environment using Policy Gradients (PG):
-
-  ```bash
-  coach -r -p CartPole_PG
-  ```
-  
-* Basic level of Doom using Dueling network and Double DQN (DDQN) algorithm:
-
-  ```bash
-  coach -r -p Doom_Basic_Dueling_DDQN
-  ```
-
-Some presets apply to a group of environment levels, like the entire Atari or Mujoco suites for example.
-To use these presets, the requeseted level should be defined using the `-lvl` flag.
-
-For example:
-
-
-* Pong using the Neural Episodic Control (NEC) algorithm:
-
-  ```bash
-  coach -r -p Atari_NEC -lvl pong
-  ```
-
-There are several types of agents that can benefit from running them in a distributed fashion with multiple workers in parallel. Each worker interacts with its own copy of the environment but updates a shared network, which improves the data collection speed and the stability of the learning process.
-To specify the number of workers to run, use the `-n` flag.
-
-For example:
-* Breakout using Asynchronous Advantage Actor-Critic (A3C) with 8 workers:
-
-  ```bash
-  coach -r -p Atari_A3C -lvl breakout -n 8
-  ```
-
-
-It is easy to create new presets for different levels or environments by following the same pattern as in presets.py
-
-More usage examples can be found [here](https://github.com/IntelLabs/coach/blob/master/tutorials/0.%20Quick%20Start%20Guide.ipynb).
-
-#### Running Coach Dashboard (Visualization)
-Training an agent to solve an environment can be tricky, at times. 
-
-In order to debug the training process, Coach outputs several signals, per trained algorithm, in order to track algorithmic performance. 
-
-While Coach trains an agent, a csv file containing the relevant training signals will be saved to the 'experiments' directory. Coach's dashboard can then be used to dynamically visualize the training signals, and track algorithmic behavior. 
-
-To use it, run:
+* MOT simulation with continuous control parameters using deep deterministic policy gradients algorithm (DDPG):
 
 ```bash
-dashboard
+coach -p ContMOT_DDPG
+```
+  
+#### Useful options 
+
+There are several options that are recommended: 
+* The `-e` flag allows you to specify the name of the experiment and the folder where the results, logs, and copies of the preset and environment files will be written to. When using the docker container use the `/checkpoint/<experiment name>` -folder to make the results available outside of the container (mounted to `/tmp/checkpoint`). 
+
+* The `-dg` flag enables the output of npz-files containing the output of evaluation episodes to the `npz` folder inside the experiment folder.
+
+* The `-s` flag specifies in seconds the interval at which checkpoints are saved 
+
+For example:
+
+```bash
+coach -p ContMOT_DDPG -dg -e /checkpoint/Test -s 1800
+```
+
+New presets can be created for different sets of parameters or environments by following the same pattern as in [ContMOT_DDPG](rl_coach/presets/ContMOT_DDPG.py).
+
+Another posibility to change the value of certain parameters is by using the custom parameter flag `-cp`.
+
+For example:
+
+```bash
+coach -p ContMOT_DDPG -dg -e /checkpoint/Test -s 1800 -cp "agent_params.exploration.sigma = 0.2"
+```
+
+#### Continue training from a checkpoint
+
+The training can be started from an existing checkpoint by specifying its location using the `-crd` flag, this will load the last checkpoint in the folder.
+
+For example: 
+
+```bash
+coach -p ContMOT_DDPG -dg -e /checkpoint/Test -s 1800 -crd /checkpoint/Test/18_04_2023-15_20/checkpoint
 ```
 
 
-
-<img src="img/dashboard.gif" alt="Coach Design" style="width: 800px;"/>
-
-
-### Distributed Multi-Node Coach
-
-As of release 0.11.0, Coach supports horizontal scaling for training RL agents on multiple nodes. In release 0.11.0 this was tested on the ClippedPPO and DQN agents.
-For usage instructions please refer to the documentation [here](https://intellabs.github.io/coach/dist_usage.html).
-
-### Batch Reinforcement Learning
-
-Training and evaluating an agent from a dataset of experience, where no simulator is available, is supported in Coach. 
-There are [example](https://github.com/IntelLabs/coach/blob/master/rl_coach/presets/CartPole_DDQN_BatchRL.py) [presets](https://github.com/IntelLabs/coach/blob/master/rl_coach/presets/Acrobot_DDQN_BCQ_BatchRL.py) and a [tutorial](https://github.com/IntelLabs/coach/blob/master/tutorials/4.%20Batch%20Reinforcement%20Learning.ipynb). 
+#### Evaluate only
 
 
-## Supported Environments
+Finally, in order to evaluate the performance of a trained agent without further training use the `--evaluate` flag followed by the number of evaluation steps/episodes?
 
-* *OpenAI Gym:*
 
-    Installed by default by Coach's installer (see note on MuJoCo version [below](#note-on-mujoco-version)).
+```bash
+coach -p ContMOT_DDPG -dg -e /checkpoint/Test -s 1800 -crd /checkpoint/Test/18_04_2023-15_20/checkpoint --evaluate 10000
+```
 
-* *ViZDoom:*
-
-    Follow the instructions described in the ViZDoom repository -
-
-    https://github.com/mwydmuch/ViZDoom
-
-    Additionally, Coach assumes that the environment variable VIZDOOM_ROOT points to the ViZDoom installation directory.
-
-* *Roboschool:*
-
-    Follow the instructions described in the roboschool repository - 
-
-    https://github.com/openai/roboschool
-
-* *GymExtensions:*
-
-    Follow the instructions described in the GymExtensions repository -
-
-    https://github.com/Breakend/gym-extensions
-
-    Additionally, add the installation directory to the PYTHONPATH environment variable.
-
-* *PyBullet:*
-
-    Follow the instructions described in the [Quick Start Guide](https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA) (basically just - 'pip install pybullet')
-
-* *CARLA:*
-
-    Download release 0.8.4 from the CARLA repository -
-
-    https://github.com/carla-simulator/carla/releases
-
-    Install the python client and dependencies from the release tarball:
-    ```
-    pip3 install -r PythonClient/requirements.txt
-    pip3 install PythonClient
-    ```
-
-    Create a new CARLA_ROOT environment variable pointing to CARLA's installation directory.
-
-    A simple CARLA settings file (```CarlaSettings.ini```) is supplied with Coach, and is located in the ```environments``` directory.
-
-* *Starcraft:*
-
-    Follow the instructions described in the PySC2 repository - 
-    
-    https://github.com/deepmind/pysc2
-    
-* *DeepMind Control Suite:*
-
-    Follow the instructions described in the DeepMind Control Suite repository - 
-    
-    https://github.com/deepmind/dm_control
-
-* *Robosuite:*<a name="robosuite"></a>
-
-    **__Note:__ To use Robosuite-based environments, please install Coach from the latest cloned repository. It is not yet available as part of the `rl_coach` package on PyPI.**
-    
-    Follow the instructions described in the [robosuite documentation](https://robosuite.ai/docs/installation.html) (see note on MuJoCo version [below](#note-on-mujoco-version)).
-
-### Note on MuJoCo version
-
-OpenAI Gym supports MuJoCo only up to version 1.5 (and corresponding mujoco-py version 1.50.x.x). The Robosuite simulation framework, however, requires MuJoCo version 2.0 (and corresponding mujoco-py version 2.0.2.9, as of robosuite version 1.2). Therefore, if you wish to run both Gym-based MuJoCo environments and Robosuite environments, it's recommended to have a separate virtual environment for each.
-
-Please note that all Gym-Based MuJoCo presets in Coach (`rl_coach/presets/Mujoco_*.py`) have been validated _**only**_ with MuJoCo 1.5 (including the reported [benchmark results](benchmarks)).
-    
 
 ## Supported Algorithms
 
@@ -354,14 +239,9 @@ If you used Coach for your work, please use the following citation:
 
 ## Contact
 
-We'd be happy to get any questions or contributions through GitHub issues and PRs.
-
-Please make sure to take a look [here](CONTRIBUTING.md) before filing an issue or proposing a PR.
-
-The Coach development team can also be contacted over [email](mailto:coach@intel.com)
+We'd be happy to get any questions or suggestions, we can be contacted over [email](mailto:valentin.volchkov@tuebingen.mpg.de)
 
 
 ## Disclaimer
 
-Coach is released as a reference code for research purposes. It is not an official Intel product, and the level of quality and support may not be as expected from an official product. 
-Additional algorithms and environments are planned to be added to the framework. Feedback and contributions from the open source and RL research communities are more than welcome.
+RL-coach-for-MOT is released as a reference code for research purposes. 
