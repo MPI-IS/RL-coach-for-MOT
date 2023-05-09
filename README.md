@@ -2,6 +2,8 @@
 
 This is a fork of the [Coach framework by Intel](https://github.com/IntelLabs/coach), used to control a simulated magneto-optical trap(MOT) through reinforcement learning. Original README.md can be found [here](README_coach.md).
 
+<img src="img/MOT_sim_1.gif" alt="MOT training"/> 
+
 
 ## Table of Contents
 
